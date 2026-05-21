@@ -1,3 +1,130 @@
-<view class="container">
-  <text>social 页面</text>
+<!--
+  星露谷物语 - 社交页面
+-->
+
+<view class="social-container">
+  <!-- 顶部栏 -->
+  <view class="header">
+    <text class="header-title">村民</text>
+    <text class="header-subtitle">与村民建立友谊</text>
+  </view>
+
+  <!-- 村民列表 -->
+  <scroll-view scroll-y class="villager-list">
+    <view 
+      wx:for="{{villagers}}" 
+      wx:key="id"
+      class="villager-item"
+      data-id="{{item.id}}"
+      bindtap="selectVillager"
+    >
+      <view class="villager-avatar">
+        <text class="avatar-icon">{{item.icon}}</text>
+      </view>
+      
+      <view class="villager-info">
+        <text class="villager-name">{{item.name}}</text>
+        <text class="villager-location">{{item.location}}</text>
+        <view class="hearts-bar">
+          <text wx:for="{{10}}" wx:for-item="heart" wx:key="index" class="heart {{index < item.hearts ? 'filled' : 'empty'}}">❤️</text>
+          <text class="hearts-text">{{item.hearts}}/10</text>
+        </view>
+      </view>
+      
+      <view class="villager-status">
+        <text wx:if="{{item.talkedToday}}" class="status-icon">💬</text>
+        <text wx:if="{{item.giftedToday}}" class="status-icon">🎁</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 村民详情面板 -->
+  <view class="detail-overlay" wx:if="{{showVillagerDetail}}" bindtap="closeVillagerDetail">
+    <view class="detail-panel" catchtap>
+      <view class="detail-header">
+        <view class="detail-avatar">
+          <text class="detail-icon">{{selectedVillager.icon}}</text>
+        </view>
+        <view class="detail-info">
+          <text class="detail-name">{{selectedVillager.name}}</text>
+          <text class="detail-location">{{selectedVillager.location}}</text>
+          <view class="hearts-bar">
+            <text wx:for="{{10}}" wx:for-item="heart" wx:key="index" class="heart {{index < selectedVillager.hearts ? 'filled' : 'empty'}}">❤️</text>
+            <text class="hearts-text">{{selectedVillager.hearts}}/10</text>
+          </view>
+        </view>
+        <button class="close-btn" bindtap="closeVillagerDetail">×</button>
+      </view>
+      
+      <view class="detail-actions">
+        <button class="action-btn talk-btn" bindtap="talkToVillager">
+          <text class="action-icon">💬</text>
+          <text>对话</text>
+        </button>
+        <button class="action-btn gift-btn" bindtap="showGiftPanel">
+          <text class="action-icon">🎁</text>
+          <text>送礼</text>
+        </button>
+        <button class="action-btn info-btn" bindtap="showPreferences">
+          <text class="action-icon">ℹ️</text>
+          <text>喜好</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 对话框 -->
+  <view class="dialog-overlay" wx:if="{{showDialog}}" bindtap="closeDialog">
+    <view class="dialog-panel" catchtap>
+      <text class="dialog-name">{{selectedVillager.name}}</text>
+      <text class="dialog-text">{{dialogText}}</text>
+      <button class="dialog-close" bindtap="closeDialog">确定</button>
+    </view>
+  </view>
+
+  <!-- 送礼面板 -->
+  <view class="gift-overlay" wx:if="{{showGiftPanel}}" bindtap="hideGiftPanel">
+    <view class="gift-panel" catchtap>
+      <view class="gift-header">
+        <text class="gift-title">送给{{selectedVillager.name}}</text>
+        <button class="close-btn" bindtap="hideGiftPanel">×</button>
+      </view>
+      <scroll-view scroll-y class="gift-list">
+        <view class="gift-grid">
+          <view class="gift-item" data-gift="紫水晶" bindtap="giveGift">
+            <text class="gift-icon">💎</text>
+            <text class="gift-name">紫水晶</text>
+          </view>
+          <view class="gift-item" data-gift="钻石" bindtap="giveGift">
+            <text class="gift-icon">💎</text>
+            <text class="gift-name">钻石</text>
+          </view>
+          <view class="gift-item" data-gift="南瓜" bindtap="giveGift">
+            <text class="gift-icon">🎃</text>
+            <text class="gift-name">南瓜</text>
+          </view>
+          <view class="gift-item" data-gift="草莓" bindtap="giveGift">
+            <text class="gift-icon">🍓</text>
+            <text class="gift-name">草莓</text>
+          </view>
+          <view class="gift-item" data-gift="向日葵" bindtap="giveGift">
+            <text class="gift-icon">🌻</text>
+            <text class="gift-name">向日葵</text>
+          </view>
+          <view class="gift-item" data-gift="咖啡" bindtap="giveGift">
+            <text class="gift-icon">☕</text>
+            <text class="gift-name">咖啡</text>
+          </view>
+          <view class="gift-item" data-gift="粘土" bindtap="giveGift">
+            <text class="gift-icon">🟫</text>
+            <text class="gift-name">粘土</text>
+          </view>
+          <view class="gift-item" data-gift="石头" bindtap="giveGift">
+            <text class="gift-icon">🪨</text>
+            <text class="gift-name">石头</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
 </view>

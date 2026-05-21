@@ -1,17 +1,17 @@
 /**
- * 星露谷物语 - 游戏主页面
+ * 星露谷物语 - 游戏主页面（完整版）
  */
 
-const GameEngine = require('../../utils/engine');
+const GameRenderer = require('../../utils/renderer');
+const GameDataManager = require('../../utils/data-manager');
 const TimeSystem = require('../../utils/time-system');
 const PlantingSystem = require('../../utils/planting-system');
-const SocialSystem = require('../../utils/social-system');
 
 const app = getApp();
 
 Page({
   data: {
-    // 游戏状态
+    // 显示状态
     gameTime: '06:00',
     gameDay: 1,
     gameSeason: '春季',
@@ -22,47 +22,37 @@ Page({
     
     // 工具
     currentTool: 'hoe',
-    tools: [
-      { id: 'hoe', name: '锄头', icon: '⛏️' },
-      { id: 'watering_can', name: '水壶', icon: '💧' },
-      { id: 'seed', name: '种子', icon: '🌱' },
-      { id: 'fertilizer', name: '肥料', icon: '💩' },
-      { id: 'harvest', name: '收获', icon: '🌾' },
-      { id: 'axe', name: '斧头', icon: '🪓' },
-      { id: 'pickaxe', name: '镐', icon: '⛏️' },
-      { id: 'fishing_rod', name: '钓竿', icon: '🎣' }
-    ],
-    
-    // 种子选择
     selectedSeed: 'parsnip',
-    showSeedSelector: false,
-    seeds: [
-      { id: 'parsnip', name: '防风草', icon: '🥕', cost: 20 },
-      { id: 'potato', name: '土豆', icon: '🥔', cost: 50 },
-      { id: 'cauliflower', name: '花椰菜', icon: '🥦', cost: 80 },
-      { id: 'tomato', name: '番茄', icon: '🍅', cost: 50 },
-      { id: 'blueberry', name: '蓝莓', icon: '🫐', cost: 80 },
-      { id: 'corn', name: '玉米', icon: '🌽', cost: 150 },
-      { id: 'melon', name: '西瓜', icon: '🍉', cost: 80 },
-      { id: 'pumpkin', name: '南瓜', icon: '🎃', cost: 100 }
-    ],
     
-    // 面板状态
+    // 面板显示
+    showSeedSelector: false,
     showShop: false,
     showBackpack: false,
-    showSocial: false,
-    showSettings: false,
     
     // 通知
     notification: '',
     showNotification: false
   },
   
-  // 游戏引擎实例
-  engine: null,
+  // 游戏实例
+  renderer: null,
+  dataManager: null,
   timeSystem: null,
   plantingSystem: null,
-  socialSystem: null,
+  canvas: null,
+  ctx: null,
+  
+  // 游戏状态
+  gameState: {
+    isRunning: false,
+    selectedTool: 'hoe',
+    selectedSeed: 'parsnip',
+    playerDirection: 'down',
+    playerMoving: false,
+    playerWatering: false,
+    touchStartX: 0,
+    touchStartY: 0
+  },
   
   onLoad() {
     this.initGame();
@@ -73,34 +63,18 @@ Page({
   },
   
   onHide() {
-    app.saveGame();
+    this.saveGame();
   },
   
   initGame() {
-    // 创建游戏引擎
-    this.engine = new GameEngine();
+    // 初始化数据管理器
+    this.dataManager = new GameDataManager();
     
-    // 添加系统
+    // 初始化时间系统
     this.timeSystem = new TimeSystem();
-    this.engine.addSystem(this.timeSystem);
     
+    // 初始化种植系统
     this.plantingSystem = new PlantingSystem();
-    this.engine.addSystem(this.plantingSystem);
-    
-    this.socialSystem = new SocialSystem();
-    this.engine.addSystem(this.socialSystem);
-    
-    // 监听事件
-    this.engine.on('dayChanged', (data) => {
-      this.onDayChanged(data);
-    });
-    
-    this.engine.on('timeChanged', (data) => {
-      this.updateTimeDisplay(data);
-    });
-    
-    // 开始游戏循环
-    this.engine.start();
     
     // 初始化画布
     this.initCanvas();
@@ -117,226 +91,353 @@ Page({
           this.canvas = res[0].node;
           this.ctx = this.canvas.getContext('2d');
           
-          const dpr = wx.getSystemInfoSync().pixelRatio;
+          const sysInfo = wx.getSystemInfoSync();
+          const dpr = sysInfo.pixelRatio;
+          
           this.canvas.width = res[0].width * dpr;
           this.canvas.height = res[0].height * dpr;
           this.ctx.scale(dpr, dpr);
           
-          this.startRendering();
+          // 初始化渲染器
+          this.renderer = new GameRenderer(this.canvas, this.ctx);
+          this.renderer.init(res[0].width, res[0].height, dpr);
+          
+          // 开始游戏循环
+          this.startGameLoop();
         }
       });
   },
   
-  startRendering() {
-    const render = () => {
-      if (!this.canvas) return;
+  startGameLoop() {
+    this.gameState.isRunning = true;
+    let lastTime = Date.now();
+    
+    const gameLoop = () => {
+      if (!this.gameState.isRunning) return;
       
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      this.drawBackground();
-      this.drawFarm();
-      this.drawPlayer();
-      this.drawUI();
+      const now = Date.now();
+      const dt = now - lastTime;
+      lastTime = now;
       
-      this.canvas.requestAnimationFrame(render);
+      // 更新游戏逻辑
+      this.update(dt);
+      
+      // 渲染游戏画面
+      this.render();
+      
+      this.canvas.requestAnimationFrame(gameLoop);
     };
     
-    render();
+    gameLoop();
   },
   
-  drawBackground() {
-    const w = this.canvas.width / wx.getSystemInfoSync().pixelRatio;
-    const h = this.canvas.height / wx.getSystemInfoSync().pixelRatio;
+  update(dt) {
+    // 更新动画
+    this.renderer.updateAnimation(dt);
     
-    // 天空
-    this.ctx.fillStyle = '#87CEEB';
-    this.ctx.fillRect(0, 0, w, h * 0.35);
+    // 更新时间系统
+    this.timeSystem.update(dt);
     
-    // 地面
-    this.ctx.fillStyle = '#90EE90';
-    this.ctx.fillRect(0, h * 0.35, w, h * 0.65);
+    // 更新玩家位置
+    this.updatePlayerPosition();
   },
   
-  drawFarm() {
-    const player = app.getPlayer();
-    const startX = 15;
-    const startY = 120;
-    const gridSize = 36;
+  render() {
+    const renderer = this.renderer;
+    const player = this.dataManager.getPlayer();
+    const farm = this.dataManager.getFarm();
+    const timeData = this.dataManager.getTime();
     
-    // 绘制农田
-    const tiles = this.plantingSystem.tiles || [];
-    tiles.forEach(tile => {
-      const x = startX + tile.x * gridSize;
-      const y = startY + tile.y * gridSize;
-      
-      // 土地颜色
-      if (tile.type === 'soil') {
-        this.ctx.fillStyle = tile.watered ? '#654321' : '#8B4513';
-      } else {
-        this.ctx.fillStyle = '#90EE90';
-      }
-      this.ctx.fillRect(x, y, gridSize - 2, gridSize - 2);
-      
-      // 作物
-      if (tile.crop && !tile.crop.dead) {
-        this.plantingSystem.renderCrop(this.ctx, x, y, tile.crop);
-      }
-      
-      // 网格线
-      this.ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-      this.ctx.lineWidth = 1;
-      this.ctx.strokeRect(x, y, gridSize - 2, gridSize - 2);
-    });
+    // 清屏
+    renderer.clear();
+    
+    // 绘制背景
+    const timePeriod = this.timeSystem.getTimePeriod();
+    renderer.drawBackground(timeData.season, timeData.weather, timePeriod);
     
     // 绘制建筑
-    this.drawBuildings(startX, startY, gridSize);
-  },
-  
-  drawBuildings(startX, startY, gridSize) {
-    const farm = app.getFarm();
+    farm.buildings.forEach(b => {
+      renderer.drawBuilding(
+        15 + b.x * 32,
+        60 + b.y * 32,
+        b.type
+      );
+    });
     
-    // 小屋
-    this.ctx.fillStyle = '#8B4513';
-    this.ctx.fillRect(startX + 5 * gridSize, startY + 5 * gridSize, gridSize * 2, gridSize * 2);
-    this.ctx.fillStyle = '#A0522D';
-    this.ctx.fillRect(startX + 5 * gridSize + 5, startY + 5 * gridSize + 5, gridSize * 2 - 10, gridSize * 2 - 10);
+    // 绘制农田
+    renderer.drawFarm(farm.tiles, 32);
     
-    // 门
-    this.ctx.fillStyle = '#654321';
-    this.ctx.fillRect(startX + 5 * gridSize + 15, startY + 6 * gridSize + 10, 15, 20);
-  },
-  
-  drawPlayer() {
-    const player = app.getPlayer();
-    const x = player.position.x;
-    const y = player.position.y;
+    // 绘制角色
+    renderer.drawCharacter(
+      player.x,
+      player.y,
+      player.direction,
+      player.isMoving,
+      player.isWatering
+    );
     
-    // 身体
-    this.ctx.fillStyle = '#FFD700';
-    this.ctx.fillRect(x - 10, y - 10, 20, 20);
-    
-    // 头部
-    this.ctx.fillStyle = '#FFE4C4';
-    this.ctx.beginPath();
-    this.ctx.arc(x, y - 16, 8, 0, Math.PI * 2);
-    this.ctx.fill();
-    
-    // 眼睛
-    this.ctx.fillStyle = '#000';
-    this.ctx.beginPath();
-    this.ctx.arc(x - 3, y - 18, 1.5, 0, Math.PI * 2);
-    this.ctx.arc(x + 3, y - 18, 1.5, 0, Math.PI * 2);
-    this.ctx.fill();
-  },
-  
-  drawUI() {
-    const w = this.canvas.width / wx.getSystemInfoSync().pixelRatio;
-    
-    // 状态栏
-    this.ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    this.ctx.fillRect(0, 0, w, 40);
-    
-    this.ctx.fillStyle = '#FFD700';
-    this.ctx.font = '13px Arial';
-    this.ctx.textAlign = 'left';
-    this.ctx.fillText(`💰 ${this.data.playerGold}g`, 10, 26);
-    
-    this.ctx.fillStyle = '#FF6B6B';
-    this.ctx.fillText(`❤️ ${this.data.playerEnergy}`, 85, 26);
-    
-    this.ctx.fillStyle = '#FFFFFF';
-    this.ctx.fillText(`${this.data.gameSeason} ${this.data.gameDay}日`, 155, 26);
-    this.ctx.fillText(`${this.data.gameTime}`, 260, 26);
-    this.ctx.fillText(this.data.gameWeather, 310, 26);
-  },
-  
-  // 工具选择
-  selectTool(e) {
-    const toolId = e.currentTarget.dataset.tool;
-    this.setData({ currentTool: toolId });
-    
-    if (toolId === 'seed') {
-      this.setData({ showSeedSelector: true });
-    } else {
-      this.setData({ showSeedSelector: false });
+    // 绘制工具
+    if (player.isWatering || this.gameState.playerWatering) {
+      renderer.drawTool(
+        this.gameState.selectedTool,
+        player.x,
+        player.y,
+        player.direction
+      );
     }
     
-    wx.vibrateShort();
+    // 绘制天气效果
+    renderer.drawWeatherEffect(timeData.weather);
+    
+    // 绘制状态栏
+    const seasonNames = { spring:'春季', summer:'夏季', autumn:'秋季', winter:'冬季' };
+    const weatherIcons = { sunny:'☀️', cloudy:'☁️', rainy:'🌧️', stormy:'⛈️', snowy:'❄️' };
+    
+    renderer.drawStatusBar(
+      player.gold,
+      player.energy,
+      player.maxEnergy,
+      timeData.day,
+      seasonNames[timeData.season],
+      this.timeSystem.getTimeString(),
+      weatherIcons[timeData.weather]
+    );
+    
+    // 绘制工具栏
+    const tools = [
+      { id: 'hoe', name: '锄头', icon: '⛏️' },
+      { id: 'watering_can', name: '水壶', icon: '💧' },
+      { id: 'seed', name: '种子', icon: '🌱' },
+      { id: 'fertilizer', name: '肥料', icon: '💩' },
+      { id: 'harvest', name: '收获', icon: '🌾' },
+      { id: 'axe', name: '斧头', icon: '🪓' },
+      { id: 'pickaxe', name: '镐', icon: '⛏️' },
+      { id: 'fishing_rod', name: '钓竿', icon: '🎣' }
+    ];
+    
+    renderer.drawToolbar(tools, this.gameState.selectedTool);
+    
+    // 绘制小地图
+    renderer.drawMiniMap(
+      renderer.width - 110,
+      50,
+      100,
+      75,
+      farm.tiles,
+      Math.floor(player.x / 32),
+      Math.floor(player.y / 32)
+    );
   },
   
-  // 选择种子
-  selectSeed(e) {
-    const seedId = e.currentTarget.dataset.seed;
-    this.setData({ selectedSeed: seedId, showSeedSelector: false });
-    wx.showToast({ title: `选择了${seedId}`, icon: 'none' });
+  // 更新玩家位置
+  updatePlayerPosition() {
+    const player = this.dataManager.getPlayer();
+    
+    if (this.gameState.playerMoving) {
+      const speed = player.speed;
+      
+      switch(player.direction) {
+        case 'up': player.y -= speed; break;
+        case 'down': player.y += speed; break;
+        case 'left': player.x -= speed; break;
+        case 'right': player.x += speed; break;
+      }
+      
+      // 边界检查
+      player.x = Math.max(20, Math.min(this.renderer.width - 20, player.x));
+      player.y = Math.max(70, Math.min(this.renderer.height - 80, player.y));
+    }
   },
   
-  // 画布点击
-  handleCanvasTap(e) {
+  // 触摸事件处理
+  handleTouchStart(e) {
     const touch = e.touches[0];
-    const x = touch.x;
-    const y = touch.y;
+    this.gameState.touchStartX = touch.x;
+    this.gameState.touchStartY = touch.y;
     
-    const player = app.getPlayer();
-    player.position.x = x;
-    player.position.y = y;
+    // 检查是否点击了工具栏
+    if (touch.y > this.renderer.height - 65) {
+      this.handleToolbarTap(touch.x, touch.y);
+      return;
+    }
     
-    // 根据工具执行操作
-    this.executeToolAction(x, y);
+    // 移动玩家
+    const player = this.dataManager.getPlayer();
+    const dx = touch.x - player.x;
+    const dy = touch.y - player.y;
+    
+    if (Math.abs(dx) > Math.abs(dy)) {
+      player.direction = dx > 0 ? 'right' : 'left';
+    } else {
+      player.direction = dy > 0 ? 'down' : 'up';
+    }
+    
+    this.gameState.playerMoving = true;
   },
   
-  executeToolAction(x, y) {
-    const tool = this.data.currentTool;
-    const player = app.getPlayer();
+  handleTouchMove(e) {
+    const touch = e.touches[0];
+    const player = this.dataManager.getPlayer();
     
-    // 计算网格位置
-    const gridX = Math.floor((x - 15) / 36);
-    const gridY = Math.floor((y - 120) / 36);
+    const dx = touch.x - player.x;
+    const dy = touch.y - player.y;
     
-    if (gridX < 0 || gridX >= 20 || gridY < 0 || gridY >= 15) return;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      player.direction = dx > 0 ? 'right' : 'left';
+    } else {
+      player.direction = dy > 0 ? 'down' : 'up';
+    }
+  },
+  
+  handleTouchEnd(e) {
+    this.gameState.playerMoving = false;
+    
+    // 执行工具操作
+    this.executeToolAction();
+  },
+  
+  // 工具栏点击
+  handleToolbarTap(x, y) {
+    const tools = ['hoe', 'watering_can', 'seed', 'fertilizer', 'harvest', 'axe', 'pickaxe', 'fishing_rod'];
+    const btnWidth = this.renderer.width / tools.length;
+    const index = Math.floor(x / btnWidth);
+    
+    if (index >= 0 && index < tools.length) {
+      const tool = tools[index];
+      this.gameState.selectedTool = tool;
+      this.setData({ currentTool: tool });
+      
+      if (tool === 'seed') {
+        this.setData({ showSeedSelector: true });
+      }
+      
+      wx.vibrateShort();
+    }
+  },
+  
+  // 执行工具操作
+  executeToolAction() {
+    const player = this.dataManager.getPlayer();
+    const farm = this.dataManager.getFarm();
+    const tool = this.gameState.selectedTool;
+    
+    // 计算目标网格位置
+    let targetX, targetY;
+    const gridSize = 32;
+    const mapOffsetX = 15;
+    const mapOffsetY = 60;
+    
+    switch(player.direction) {
+      case 'up': 
+        targetX = Math.floor((player.x - mapOffsetX) / gridSize);
+        targetY = Math.floor((player.y - mapOffsetY - gridSize) / gridSize);
+        break;
+      case 'down':
+        targetX = Math.floor((player.x - mapOffsetX) / gridSize);
+        targetY = Math.floor((player.y - mapOffsetY + gridSize) / gridSize);
+        break;
+      case 'left':
+        targetX = Math.floor((player.x - mapOffsetX - gridSize) / gridSize);
+        targetY = Math.floor((player.y - mapOffsetY) / gridSize);
+        break;
+      case 'right':
+        targetX = Math.floor((player.x - mapOffsetX + gridSize) / gridSize);
+        targetY = Math.floor((player.y - mapOffsetY) / gridSize);
+        break;
+    }
+    
+    // 检查目标位置是否有效
+    if (targetX < 0 || targetX >= 18 || targetY < 0 || targetY >= 12) return;
+    
+    const tile = farm.tiles.find(t => t.x === targetX && t.y === targetY);
+    if (!tile) return;
     
     switch(tool) {
       case 'hoe':
-        if (player.energy >= 2) {
-          if (this.plantingSystem.tillSoil(gridX, gridY)) {
-            player.energy -= 2;
-            this.showNotify('翻地成功');
-            wx.vibrateShort();
-          }
+        if (player.energy >= 2 && tile.type === 'grass') {
+          tile.type = 'soil';
+          tile.state = 'tilled';
+          player.energy -= 2;
+          this.showNotify('翻地成功');
+          wx.vibrateShort();
+        } else if (tile.type !== 'grass') {
+          this.showNotify('这里已经翻过了');
         } else {
           this.showNotify('体力不足');
         }
         break;
         
       case 'watering_can':
-        if (player.energy >= 1) {
-          if (this.plantingSystem.waterTile(gridX, gridY)) {
-            player.energy -= 1;
-            this.showNotify('浇水成功');
-          }
+        if (player.energy >= 1 && tile.crop) {
+          tile.watered = true;
+          player.energy -= 1;
+          this.showNotify('浇水成功');
         }
         break;
         
       case 'seed':
-        if (player.energy >= 1) {
-          if (this.plantingSystem.plantCrop(gridX, gridY, this.data.selectedSeed, player)) {
+        if (player.energy >= 1 && tile.state === 'tilled' && !tile.crop) {
+          const seedType = this.gameState.selectedSeed;
+          if (this.dataManager.useSeed(seedType)) {
+            tile.crop = {
+              type: seedType,
+              growthDay: 0,
+              state: 'seed',
+              quality: 'normal',
+              dead: false
+            };
             player.energy -= 1;
-            this.showNotify(`种植了${this.data.selectedSeed}`);
+            this.showNotify(`种植了${seedType}`);
           } else {
-            this.showNotify('无法种植');
+            this.showNotify('没有种子了');
           }
         }
         break;
         
       case 'harvest':
-        const result = this.plantingSystem.harvestCrop(gridX, gridY, player);
-        if (result) {
-          app.updateGold(result.price);
-          this.showNotify(`收获了${result.yield}个作物，获得${result.price}金币`);
+        if (tile.crop && tile.crop.state === 'mature') {
+          const cropData = this.plantingSystem.getCropInfo(tile.crop.type);
+          if (cropData) {
+            const price = this.calculateHarvestPrice(cropData, tile.crop.quality);
+            this.dataManager.updateGold(price);
+            this.dataManager.addSkillExp('farming', 10);
+            
+            tile.crop = null;
+            tile.state = 'tilled';
+            
+            this.showNotify(`收获！获得${price}金币`);
+            wx.vibrateShort();
+          }
+        }
+        break;
+        
+      case 'fertilizer':
+        if (tile.crop && !tile.fertilized) {
+          tile.fertilized = true;
+          this.showNotify('施肥成功');
         }
         break;
     }
     
     this.updateUI();
+  },
+  
+  calculateHarvestPrice(cropData, quality) {
+    let price = cropData.sellPrice;
+    switch(quality) {
+      case 'iridium': price *= 2; break;
+      case 'gold': price *= 1.5; break;
+      case 'silver': price *= 1.25; break;
+    }
+    return Math.floor(price);
+  },
+  
+  // 选择种子
+  selectSeed(e) {
+    const seedId = e.currentTarget.dataset.seed;
+    this.gameState.selectedSeed = seedId;
+    this.setData({ selectedSeed: seedId, showSeedSelector: false });
+    wx.showToast({ title: `选择了${seedId}`, icon: 'none' });
   },
   
   // 显示通知
@@ -347,57 +448,27 @@ Page({
     }, 2000);
   },
   
-  // 日期变化
-  onDayChanged(data) {
-    this.setData({
-      gameDay: data.day,
-      gameSeason: data.seasonName,
-      gameWeather: data.weatherIcon
-    });
-    
-    // 恢复体力
-    const player = app.getPlayer();
-    player.energy = player.maxEnergy;
-    
-    // 重置社交
-    this.socialSystem.resetDaily();
-    
-    app.saveGame();
-    this.updateUI();
-  },
-  
-  // 更新时间显示
-  updateTimeDisplay(data) {
-    this.setData({ gameTime: data.timeString });
-  },
-  
   // 更新UI
   updateUI() {
-    const player = app.getPlayer();
+    const player = this.dataManager.getPlayer();
+    const timeData = this.dataManager.getTime();
+    const seasonNames = { spring:'春季', summer:'夏季', autumn:'秋季', winter:'冬季' };
+    const weatherIcons = { sunny:'☀️', cloudy:'☁️', rainy:'🌧️', stormy:'⛈️', snowy:'❄️' };
+    
     this.setData({
       playerGold: player.gold,
       playerEnergy: player.energy,
-      playerMaxEnergy: player.maxEnergy
+      playerMaxEnergy: player.maxEnergy,
+      gameDay: timeData.day,
+      gameSeason: seasonNames[timeData.season],
+      gameWeather: weatherIcons[timeData.weather],
+      gameTime: this.timeSystem.getTimeString()
     });
   },
   
-  // 面板控制
-  showShopPanel() { this.setData({ showShop: true }); },
-  hideShopPanel() { this.setData({ showShop: false }); },
-  
-  showBackpackPanel() { this.setData({ showBackpack: true }); },
-  hideBackpackPanel() { this.setData({ showBackpack: false }); },
-  
-  showSocialPanel() { this.setData({ showSocial: true }); },
-  hideSocialPanel() { this.setData({ showSocial: false }); },
-  
-  showSettingsPanel() { this.setData({ showSettings: true }); },
-  hideSettingsPanel() { this.setData({ showSettings: false }); },
-  
   // 保存游戏
   saveGame() {
-    app.saveGame();
-    wx.showToast({ title: '游戏已保存', icon: 'success' });
+    this.dataManager.save();
   },
   
   // 跳转页面
@@ -405,5 +476,12 @@ Page({
   goToSocial() { wx.switchTab({ url: '/pages/social/social' }); },
   goToMine() { wx.navigateTo({ url: '/pages/mine/mine' }); },
   goToFish() { wx.navigateTo({ url: '/pages/fishing/fishing' }); },
-  goToSettings() { wx.switchTab({ url: '/pages/settings/settings' }); }
+  goToSettings() { wx.switchTab({ url: '/pages/settings/settings' }); },
+  
+  // 面板控制
+  hideSeedSelector() { this.setData({ showSeedSelector: false }); },
+  showShopPanel() { this.setData({ showShop: true }); },
+  hideShopPanel() { this.setData({ showShop: false }); },
+  showBackpackPanel() { this.setData({ showBackpack: true }); },
+  hideBackpackPanel() { this.setData({ showBackpack: false }); }
 });

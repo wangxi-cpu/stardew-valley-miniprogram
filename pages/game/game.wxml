@@ -1,91 +1,100 @@
 <!--
-  星露谷物语 - 游戏页面
+  星露谷物语 - 游戏页面（完整版）
 -->
 
 <view class="game-container">
-  <!-- 状态栏 -->
-  <view class="status-bar">
-    <view class="status-item">
-      <text class="status-icon">💰</text>
-      <text>{{playerGold}}g</text>
-    </view>
-    <view class="status-item">
-      <text class="status-icon">❤️</text>
-      <text>{{playerEnergy}}/{{playerMaxEnergy}}</text>
-    </view>
-    <view class="status-item">
-      <text>{{gameSeason}} {{gameDay}}日</text>
-    </view>
-    <view class="status-item">
-      <text>{{gameWeather}} {{gameTime}}</text>
-    </view>
-  </view>
-
   <!-- 游戏画布 -->
   <canvas 
     id="gameCanvas" 
     class="game-canvas"
     type="2d"
-    bindtouchstart="handleCanvasTap"
+    bindtouchstart="handleTouchStart"
+    bindtouchmove="handleTouchMove"
+    bindtouchend="handleTouchEnd"
   ></canvas>
 
   <!-- 种子选择器 -->
   <view class="seed-selector {{showSeedSelector ? 'show' : ''}}">
     <view class="seed-header">
-      <text>选择种子</text>
+      <text class="seed-title">选择种子</text>
       <button class="close-btn" bindtap="hideSeedSelector">×</button>
     </view>
-    <scroll-view scroll-x class="seed-list">
-      <view 
-        wx:for="{{seeds}}" 
-        wx:key="id"
-        class="seed-item {{selectedSeed === item.id ? 'selected' : ''}}"
-        data-seed="{{item.id}}"
-        bindtap="selectSeed"
-      >
-        <text class="seed-icon">{{item.icon}}</text>
-        <text class="seed-name">{{item.name}}</text>
-        <text class="seed-cost">{{item.cost}}g</text>
+    <scroll-view scroll-x class="seed-scroll">
+      <view class="seed-list">
+        <view 
+          class="seed-item {{selectedSeed === 'parsnip' ? 'selected' : ''}}"
+          data-seed="parsnip"
+          bindtap="selectSeed"
+        >
+          <text class="seed-icon">🥕</text>
+          <text class="seed-name">防风草</text>
+          <text class="seed-cost">20g</text>
+        </view>
+        <view 
+          class="seed-item {{selectedSeed === 'potato' ? 'selected' : ''}}"
+          data-seed="potato"
+          bindtap="selectSeed"
+        >
+          <text class="seed-icon">🥔</text>
+          <text class="seed-name">土豆</text>
+          <text class="seed-cost">50g</text>
+        </view>
+        <view 
+          class="seed-item {{selectedSeed === 'cauliflower' ? 'selected' : ''}}"
+          data-seed="cauliflower"
+          bindtap="selectSeed"
+        >
+          <text class="seed-icon">🥦</text>
+          <text class="seed-name">花椰菜</text>
+          <text class="seed-cost">80g</text>
+        </view>
+        <view 
+          class="seed-item {{selectedSeed === 'tomato' ? 'selected' : ''}}"
+          data-seed="tomato"
+          bindtap="selectSeed"
+        >
+          <text class="seed-icon">🍅</text>
+          <text class="seed-name">番茄</text>
+          <text class="seed-cost">50g</text>
+        </view>
+        <view 
+          class="seed-item {{selectedSeed === 'blueberry' ? 'selected' : ''}}"
+          data-seed="blueberry"
+          bindtap="selectSeed"
+        >
+          <text class="seed-icon">🫐</text>
+          <text class="seed-name">蓝莓</text>
+          <text class="seed-cost">80g</text>
+        </view>
+        <view 
+          class="seed-item {{selectedSeed === 'corn' ? 'selected' : ''}}"
+          data-seed="corn"
+          bindtap="selectSeed"
+        >
+          <text class="seed-icon">🌽</text>
+          <text class="seed-name">玉米</text>
+          <text class="seed-cost">150g</text>
+        </view>
+        <view 
+          class="seed-item {{selectedSeed === 'melon' ? 'selected' : ''}}"
+          data-seed="melon"
+          bindtap="selectSeed"
+        >
+          <text class="seed-icon">🍉</text>
+          <text class="seed-name">西瓜</text>
+          <text class="seed-cost">80g</text>
+        </view>
+        <view 
+          class="seed-item {{selectedSeed === 'pumpkin' ? 'selected' : ''}}"
+          data-seed="pumpkin"
+          bindtap="selectSeed"
+        >
+          <text class="seed-icon">🎃</text>
+          <text class="seed-name">南瓜</text>
+          <text class="seed-cost">100g</text>
+        </view>
       </view>
     </scroll-view>
-  </view>
-
-  <!-- 工具栏 -->
-  <view class="toolbar">
-    <view 
-      wx:for="{{tools}}" 
-      wx:key="id"
-      class="tool-btn {{currentTool === item.id ? 'active' : ''}}"
-      data-tool="{{item.id}}"
-      bindtap="selectTool"
-    >
-      <text class="tool-icon">{{item.icon}}</text>
-      <text class="tool-name">{{item.name}}</text>
-    </view>
-  </view>
-
-  <!-- 菜单栏 -->
-  <view class="menu-bar">
-    <button class="menu-btn" bindtap="showShopPanel">
-      <text class="menu-icon">🏪</text>
-      <text>商店</text>
-    </button>
-    <button class="menu-btn" bindtap="showBackpackPanel">
-      <text class="menu-icon">🎒</text>
-      <text>背包</text>
-    </button>
-    <button class="menu-btn" bindtap="goToMine">
-      <text class="menu-icon">⛏️</text>
-      <text>矿洞</text>
-    </button>
-    <button class="menu-btn" bindtap="goToFish">
-      <text class="menu-icon">🎣</text>
-      <text>钓鱼</text>
-    </button>
-    <button class="menu-btn" bindtap="saveGame">
-      <text class="menu-icon">💾</text>
-      <text>保存</text>
-    </button>
   </view>
 
   <!-- 通知 -->
@@ -100,19 +109,37 @@
       <button class="panel-close" bindtap="hideShopPanel">×</button>
     </view>
     <view class="shop-content">
-      <text class="shop-category">种子</text>
-      <view class="item-grid">
-        <view 
-          wx:for="{{seeds}}" 
-          wx:key="id"
-          class="item-slot"
-          bindtap="buySeed"
-          data-seed="{{item.id}}"
-          data-cost="{{item.cost}}"
-        >
-          <text class="item-icon">{{item.icon}}</text>
-          <text class="item-name">{{item.name}}</text>
-          <text class="item-price">{{item.cost}}g</text>
+      <text class="shop-category">🌱 种子</text>
+      <view class="shop-grid">
+        <view class="shop-item" bindtap="buySeed" data-seed="parsnip" data-cost="20">
+          <text class="shop-icon">🥕</text>
+          <text class="shop-name">防风草种子</text>
+          <text class="shop-price">20g</text>
+        </view>
+        <view class="shop-item" bindtap="buySeed" data-seed="potato" data-cost="50">
+          <text class="shop-icon">🥔</text>
+          <text class="shop-name">土豆种子</text>
+          <text class="shop-price">50g</text>
+        </view>
+        <view class="shop-item" bindtap="buySeed" data-seed="cauliflower" data-cost="80">
+          <text class="shop-icon">🥦</text>
+          <text class="shop-name">花椰菜种子</text>
+          <text class="shop-price">80g</text>
+        </view>
+        <view class="shop-item" bindtap="buySeed" data-seed="tomato" data-cost="50">
+          <text class="shop-icon">🍅</text>
+          <text class="shop-name">番茄种子</text>
+          <text class="shop-price">50g</text>
+        </view>
+        <view class="shop-item" bindtap="buySeed" data-seed="blueberry" data-cost="80">
+          <text class="shop-icon">🫐</text>
+          <text class="shop-name">蓝莓种子</text>
+          <text class="shop-price">80g</text>
+        </view>
+        <view class="shop-item" bindtap="buySeed" data-seed="corn" data-cost="150">
+          <text class="shop-icon">🌽</text>
+          <text class="shop-name">玉米种子</text>
+          <text class="shop-price">150g</text>
         </view>
       </view>
     </view>
@@ -124,9 +151,20 @@
       <text class="panel-title">背包</text>
       <button class="panel-close" bindtap="hideBackpackPanel">×</button>
     </view>
-    <view class="item-grid">
-      <view wx:for="{{36}}" wx:key="index" class="item-slot">
-        <!-- 物品 -->
+    <view class="backpack-content">
+      <view class="backpack-grid">
+        <view class="backpack-item">
+          <text class="bp-icon">🥕</text>
+          <text class="bp-count">15</text>
+        </view>
+        <view class="backpack-item">
+          <text class="bp-icon">🌱</text>
+          <text class="bp-count">10</text>
+        </view>
+        <view class="backpack-item">
+          <text class="bp-icon">💧</text>
+          <text class="bp-count">1</text>
+        </view>
       </view>
     </view>
   </view>
