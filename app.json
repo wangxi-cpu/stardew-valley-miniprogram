@@ -1,0 +1,61 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/game/game",
+    "pages/inventory/inventory",
+    "pages/social/social",
+    "pages/mine/mine",
+    "pages/fishing/fishing",
+    "pages/shop/shop",
+    "pages/settings/settings",
+    "pages/quest/quest",
+    "pages/map/map"
+  ],
+  "window": {
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#2c3e50",
+    "navigationBarTitleText": "星露谷物语",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#87CEEB"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#FFD700",
+    "backgroundColor": "#2c3e50",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "主页",
+        "iconPath": "assets/images/ui/home.png",
+        "selectedIconPath": "assets/images/ui/home_active.png"
+      },
+      {
+        "pagePath": "pages/game/game",
+        "text": "农场",
+        "iconPath": "assets/images/ui/farm.png",
+        "selectedIconPath": "assets/images/ui/farm_active.png"
+      },
+      {
+        "pagePath": "pages/inventory/inventory",
+        "text": "背包",
+        "iconPath": "assets/images/ui/bag.png",
+        "selectedIconPath": "assets/images/ui/bag_active.png"
+      },
+      {
+        "pagePath": "pages/social/social",
+        "text": "社交",
+        "iconPath": "assets/images/ui/social.png",
+        "selectedIconPath": "assets/images/ui/social_active.png"
+      },
+      {
+        "pagePath": "pages/settings/settings",
+        "text": "菜单",
+        "iconPath": "assets/images/ui/menu.png",
+        "selectedIconPath": "assets/images/ui/menu_active.png"
+      }
+    ]
+  },
+  "cloud": true,
+  "sitemapLocation": "sitemap.json"
+}

@@ -1,0 +1,98 @@
+<!--
+  星露谷物语 - 主页
+-->
+
+<view class="index-container">
+  <!-- 背景 -->
+  <view class="background">
+    <view class="sky"></view>
+    <view class="ground"></view>
+    <view class="clouds">
+      <view class="cloud cloud-1"></view>
+      <view class="cloud cloud-2"></view>
+      <view class="cloud cloud-3"></view>
+    </view>
+  </view>
+
+  <!-- 标题 -->
+  <view class="title-container">
+    <view class="game-title">
+      <text class="title-text">星露谷物语</text>
+      <text class="subtitle-text">Stardew Valley</text>
+    </view>
+  </view>
+
+  <!-- 玩家信息 -->
+  <view class="player-info">
+    <view class="info-item" bindtap="inputPlayerName">
+      <text class="info-label">农场主:</text>
+      <text class="info-value">{{playerName}}</text>
+      <text class="edit-icon">✏️</text>
+    </view>
+    <view class="info-item" bindtap="inputFarmName">
+      <text class="info-label">农场名:</text>
+      <text class="info-value">{{farmName}}</text>
+      <text class="edit-icon">✏️</text>
+    </view>
+  </view>
+
+  <!-- 菜单按钮 -->
+  <view class="menu-container">
+    <view class="menu-item" bindtap="startNewGame">
+      <text class="menu-icon">🎮</text>
+      <view class="menu-text">
+        <text class="menu-name">新游戏</text>
+        <text class="menu-desc">开始新的农场生活</text>
+      </view>
+      <text class="menu-arrow">→</text>
+    </view>
+    
+    <view class="menu-item" wx:if="{{showContinueBtn}}" bindtap="continueGame">
+      <text class="menu-icon">📂</text>
+      <view class="menu-text">
+        <text class="menu-name">继续游戏</text>
+        <text class="menu-desc">继续之前的存档</text>
+      </view>
+      <text class="menu-arrow">→</text>
+    </view>
+    
+    <view class="menu-item" bindtap="goToSettings">
+      <text class="menu-icon">⚙️</text>
+      <view class="menu-text">
+        <text class="menu-name">设置</text>
+        <text class="menu-desc">游戏设置</text>
+      </view>
+      <text class="menu-arrow">→</text>
+    </view>
+    
+    <view class="menu-item" bindtap="showAbout">
+      <text class="menu-icon">ℹ️</text>
+      <view class="menu-text">
+        <text class="menu-name">关于</text>
+        <text class="menu-desc">游戏信息</text>
+      </view>
+      <text class="menu-arrow">→</text>
+    </view>
+  </view>
+
+  <!-- 装饰 -->
+  <view class="decorations">
+    <text class="tree tree-1">🌳</text>
+    <text class="tree tree-2">🌲</text>
+    <text class="flower flower-1">🌸</text>
+    <text class="animal animal-1">🐔</text>
+    <text class="animal animal-2">🐄</text>
+  </view>
+
+  <!-- 新游戏确认弹窗 -->
+  <view class="dialog-overlay" wx:if="{{showNewGameDialog}}" bindtap="cancelNewGame">
+    <view class="dialog" catchtap>
+      <text class="dialog-title">开始新游戏</text>
+      <text class="dialog-content">确定要开始新游戏吗？这会覆盖现有存档。</text>
+      <view class="dialog-buttons">
+        <button class="btn btn-danger" bindtap="confirmNewGame">确定</button>
+        <button class="btn btn-primary" bindtap="cancelNewGame">取消</button>
+      </view>
+    </view>
+  </view>
+</view>

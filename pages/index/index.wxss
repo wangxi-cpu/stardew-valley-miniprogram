@@ -1,0 +1,278 @@
+/**
+ * 星露谷物语 - 主页样式
+ */
+
+.index-container {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.sky {
+  height: 55%;
+  background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 100%);
+}
+
+.ground {
+  height: 45%;
+  background: linear-gradient(180deg, #90EE90 0%, #228B22 100%);
+}
+
+.clouds {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 55%;
+  overflow: hidden;
+}
+
+.cloud {
+  position: absolute;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+  animation: float 30s linear infinite;
+}
+
+.cloud::before, .cloud::after {
+  content: '';
+  position: absolute;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+}
+
+.cloud-1 {
+  width: 100rpx;
+  height: 50rpx;
+  top: 15%;
+  left: -100rpx;
+}
+
+.cloud-1::before { width: 60rpx; height: 60rpx; top: -30rpx; left: 20rpx; }
+.cloud-1::after { width: 40rpx; height: 40rpx; top: -20rpx; right: 15rpx; }
+
+.cloud-2 {
+  width: 80rpx;
+  height: 40rpx;
+  top: 25%;
+  left: -80rpx;
+  animation-delay: -15s;
+}
+
+.cloud-3 {
+  width: 120rpx;
+  height: 50rpx;
+  top: 10%;
+  left: -120rpx;
+  animation-delay: -25s;
+}
+
+@keyframes float {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(100vw + 200rpx)); }
+}
+
+.title-container {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding-top: 12vh;
+  padding-bottom: 5vh;
+}
+
+.game-title {
+  display: inline-block;
+  animation: bounce 2s infinite;
+}
+
+.title-text {
+  display: block;
+  font-size: 68rpx;
+  font-weight: bold;
+  color: #FFD700;
+  text-shadow: 3rpx 3rpx 0 #B8860B, -1rpx -1rpx 0 #B8860B;
+}
+
+.subtitle-text {
+  display: block;
+  font-size: 32rpx;
+  color: #8B6914;
+  margin-top: 8rpx;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10rpx); }
+}
+
+.player-info {
+  position: relative;
+  z-index: 10;
+  margin: 0 40rpx;
+  padding: 25rpx;
+  background: rgba(255,255,255,0.9);
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.1);
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #eee;
+}
+
+.info-item:last-child { border-bottom: none; }
+
+.info-label {
+  font-size: 26rpx;
+  color: #666;
+  width: 100rpx;
+}
+
+.info-value {
+  flex: 1;
+  font-size: 26rpx;
+  color: #333;
+  font-weight: bold;
+}
+
+.edit-icon {
+  font-size: 24rpx;
+}
+
+.menu-container {
+  position: relative;
+  z-index: 10;
+  margin: 25rpx 40rpx;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 25rpx;
+  margin-bottom: 16rpx;
+  background: rgba(255,255,255,0.9);
+  border-radius: 12rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.08);
+}
+
+.menu-item:active { transform: scale(0.98); }
+
+.menu-icon {
+  font-size: 48rpx;
+  margin-right: 20rpx;
+}
+
+.menu-text { flex: 1; }
+
+.menu-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 4rpx;
+}
+
+.menu-desc {
+  display: block;
+  font-size: 22rpx;
+  color: #999;
+}
+
+.menu-arrow {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.decorations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.tree, .flower, .animal {
+  position: absolute;
+  font-size: 48rpx;
+  animation: sway 3s infinite ease-in-out;
+}
+
+.tree-1 { bottom: 30%; left: 8%; }
+.tree-2 { bottom: 25%; right: 12%; animation-delay: -1.5s; }
+.flower-1 { bottom: 35%; left: 22%; font-size: 36rpx; }
+.animal-1 { bottom: 18%; left: 25%; font-size: 40rpx; }
+.animal-2 { bottom: 15%; right: 20%; font-size: 40rpx; animation-delay: -2s; }
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog {
+  background: #34495e;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  width: 80%;
+  max-width: 500rpx;
+}
+
+.dialog-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #ecf0f1;
+  margin-bottom: 20rpx;
+  text-align: center;
+}
+
+.dialog-content {
+  display: block;
+  font-size: 26rpx;
+  color: #bdc3c7;
+  margin-bottom: 30rpx;
+  text-align: center;
+}
+
+.dialog-buttons {
+  display: flex;
+  gap: 20rpx;
+}
+
+.dialog-buttons .btn {
+  flex: 1;
+}
+
+@media (max-width: 750rpx) {
+  .title-text { font-size: 52rpx; }
+  .subtitle-text { font-size: 26rpx; }
+  .player-info { margin: 0 30rpx; }
+  .menu-container { margin: 20rpx 30rpx; }
+  .menu-item { padding: 20rpx; }
+  .menu-icon { font-size: 40rpx; }
+}

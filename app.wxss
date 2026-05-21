@@ -1,0 +1,269 @@
+/**
+ * 星露谷物语 - 全局样式
+ */
+
+page {
+  font-family: 'Courier New', monospace;
+  background-color: #87CEEB;
+  color: #2c3e50;
+}
+
+.pixel-text {
+  font-family: 'Courier New', monospace;
+  text-shadow: 1px 1px 0px rgba(0,0,0,0.3);
+}
+
+.game-container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #87CEEB 0%, #90EE90 100%);
+}
+
+.status-bar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12rpx 20rpx;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  font-size: 22rpx;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.status-icon {
+  width: 28rpx;
+  height: 28rpx;
+}
+
+.game-canvas {
+  flex: 1;
+  width: 100%;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: center;
+  gap: 15rpx;
+  padding: 15rpx;
+  background-color: #34495e;
+  border-top: 3rpx solid #2c3e50;
+}
+
+.tool-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10rpx 18rpx;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 10rpx;
+  font-size: 20rpx;
+  border: none;
+  transition: all 0.2s;
+}
+
+.tool-btn.active {
+  background-color: #f39c12;
+  transform: scale(1.1);
+}
+
+.tool-icon {
+  font-size: 32rpx;
+  margin-bottom: 4rpx;
+}
+
+.menu-bar {
+  display: flex;
+  justify-content: space-around;
+  padding: 15rpx;
+  background-color: #2c3e50;
+  border-top: 3rpx solid #34495e;
+}
+
+.menu-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8rpx;
+  background: none;
+  color: #ecf0f1;
+  font-size: 20rpx;
+  border: none;
+  line-height: 1.2;
+}
+
+.menu-btn::after { border: none; }
+
+.menu-icon {
+  font-size: 36rpx;
+  margin-bottom: 4rpx;
+}
+
+.panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #34495e;
+  border-radius: 20rpx;
+  padding: 25rpx;
+  z-index: 1000;
+  min-width: 600rpx;
+  max-height: 80vh;
+  overflow-y: auto;
+  border: 3rpx solid #2c3e50;
+  box-shadow: 0 10rpx 40rpx rgba(0,0,0,0.5);
+}
+
+.panel.hidden { display: none; }
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding-bottom: 15rpx;
+  border-bottom: 2rpx solid #7f8c8d;
+}
+
+.panel-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #ecf0f1;
+}
+
+.panel-close {
+  width: 48rpx;
+  height: 48rpx;
+  background-color: #e74c3c;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 28rpx;
+  border: none;
+  padding: 0;
+}
+
+.panel-close::after { border: none; }
+
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12rpx;
+}
+
+.item-slot {
+  width: 80rpx;
+  height: 80rpx;
+  background-color: #2c3e50;
+  border: 2rpx solid #7f8c8d;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.item-slot.selected {
+  border-color: #f39c12;
+  background-color: #34495e;
+}
+
+.item-icon {
+  font-size: 36rpx;
+}
+
+.item-count {
+  position: absolute;
+  bottom: 2rpx;
+  right: 4rpx;
+  font-size: 16rpx;
+  color: #ecf0f1;
+  background-color: rgba(0,0,0,0.6);
+  padding: 1rpx 6rpx;
+  border-radius: 4rpx;
+}
+
+.btn {
+  padding: 12rpx 25rpx;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+  font-weight: bold;
+  border: none;
+  text-align: center;
+}
+
+.btn-primary { background-color: #3498db; color: white; }
+.btn-success { background-color: #27ae60; color: white; }
+.btn-warning { background-color: #f39c12; color: white; }
+.btn-danger { background-color: #e74c3c; color: white; }
+
+.notification {
+  position: fixed;
+  top: 80rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #3498db;
+  color: white;
+  padding: 12rpx 25rpx;
+  border-radius: 8rpx;
+  z-index: 2000;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+.villager-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  margin-bottom: 12rpx;
+  background-color: #2c3e50;
+  border-radius: 10rpx;
+}
+
+.villager-avatar {
+  width: 70rpx;
+  height: 70rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+  border: 3rpx solid #3498db;
+}
+
+.villager-info { flex: 1; }
+
+.villager-name {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #ecf0f1;
+  margin-bottom: 6rpx;
+}
+
+.hearts {
+  display: flex;
+  gap: 4rpx;
+}
+
+.heart { font-size: 20rpx; }
+.heart.filled { color: #e74c3c; }
+.heart.empty { color: #7f8c8d; }
+
+@media (max-width: 750rpx) {
+  .item-grid { grid-template-columns: repeat(4, 1fr); }
+  .status-bar { font-size: 20rpx; }
+  .toolbar { gap: 10rpx; }
+  .tool-btn { padding: 8rpx 12rpx; }
+  .panel { min-width: 500rpx; }
+}
